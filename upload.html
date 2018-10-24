@@ -10,8 +10,8 @@
 </head>
 <body>
 	<p>File upload sucessfully!</p>
-	<form id="imgConvert" enctype="multipart/form-data" action="api/Convert" method="post">
-		<input type="button" />
+	<form id="imgConvert" action="http://localhost:3030/Convert" method="GET">
+		<input type="submit" name="cvtimg" id="btnConvert" value="Convert" />
 	</form>
 </body>
 </html>
