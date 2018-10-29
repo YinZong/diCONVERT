@@ -2,23 +2,56 @@ var express = require('express');
 var multer = require('multer');
 var bodyParser = require('body-parser');
 var fs = require('fs');
+var util = require('util');
+var xml2js = require('xml2js');
+
 var path = 'Images';
 var app = express();
+var parser = new xml2js.Parser();
+var xmlBuilder = new xml2js.Builder();
 const { spawn } = require('child_process');
-
 
 app.use(bodyParser.json());
 
-function cmdRun(){
-	var existFile = new Array(".jpg", ".jpeg");
-
+function reset(){
 	fs.readdir(path, function(err, files){
 		if(err){
 			console.log(err);
 		}
-		var ls = spawn('jpg2dcm', ['./Images/' + files[0], './dcmFiles/3456.dcm']);
-		console.log(files[0]);
+		var cls = spawn('rm', ['./Images/' + files[0], './dcmFiles/3456.dcm']);
 	});
+}
+
+function cmdRun(){
+	fs.readdir(path, function(err, files){
+		if(err){
+			console.log(err);
+		}
+		var ls = spawn('jpg2dcm', ['-f', './metadata/patient.xml', './Images/' + files[0], './dcmFiles/3456.dcm']);
+		console.log(files[0]);
+		// var rmfile = spawn('rm', ['./Images/' + files[0]]);
+	});
+}
+
+function xmlCreater(id, name, bd, sex){
+	fs.readFile("./metatemplate.xml", function(err, data){
+		if(err){
+			console.log('Fail to read file!\n' + err);
+		}
+		parser.parseString(data, function(err, res){
+			if(err){
+				console.log('Parser Fail!\n' + err);
+			}
+			// console.log(util.inspect(res, false, null));
+			res.NativeDicomModel.DicomAttribute[0].Value = [{_: id, '$': {number: '1'}}];
+			res.NativeDicomModel.DicomAttribute[1].Value = [{_: name, '$': {number: '1'}}];
+			res.NativeDicomModel.DicomAttribute[2].Value = [{_: bd, '$': {number: '1'}}];
+			res.NativeDicomModel.DicomAttribute[3].Value = [{_: sex, '$': {number: '1'}}];
+			var xml_save = xmlBuilder.buildObject(res);
+			fs.writeFile('./metadata/patient.xml', xml_save);
+		});
+	});
+	cmdRun();
 }
 
 var Storage = multer.diskStorage({
@@ -35,6 +68,7 @@ var upload = multer({storage: Storage}).single("ImgUploader");
 
 app.get("/", function(req, res){
 	res.sendFile(__dirname + "/index.html");
+	reset();
 });
 
 app.post("/upload", function(req, res){
@@ -48,7 +82,11 @@ app.post("/upload", function(req, res){
 });
 
 app.get("/Convert", function(req, res){
-	cmdRun();
+	var ID = req.query.PatientID;
+	var NAME = req.query.PatientName;
+	var BD = req.query.PatientBirthday;
+	var SEX = req.query.PatientSex;
+	xmlCreater(ID, NAME, BD, SEX);
 	return res.end("DONE!");
 });
 
