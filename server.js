@@ -6,7 +6,6 @@ var util = require('util');
 var xml2js = require('xml2js');
 
 var path = 'Images';
-var FileName = 'Custom_jpg2dcm.dcm';
 var FilePath = './dcmFiles/3456.dcm';
 var app = express();
 var parser = new xml2js.Parser();
@@ -38,11 +37,11 @@ function cmdRun(){
 			console.log(err);
 		}
 		var ls = spawn('jpg2dcm', ['-f', './metadata/patient.xml', './Images/' + files[0], './dcmFiles/3456.dcm']);
-		console.log(files[0]);
+		// console.log(files[0]);
 	});
 }
 
-function xmlCreater(id, name, bd, sex){
+function xmlCreater(id, name, bd, sex, date, time){
 	fs.readFile("./metatemplate.xml", function(err, data){
 		if(err){
 			console.log('Fail to read file!\n' + err);
@@ -56,6 +55,8 @@ function xmlCreater(id, name, bd, sex){
 			res.NativeDicomModel.DicomAttribute[1].Value = [{_: name, '$': {number: '1'}}];
 			res.NativeDicomModel.DicomAttribute[2].Value = [{_: bd, '$': {number: '1'}}];
 			res.NativeDicomModel.DicomAttribute[3].Value = [{_: sex, '$': {number: '1'}}];
+			res.NativeDicomModel.DicomAttribute[4].Value = [{_: date, '$': {number: '1'}}];
+			res.NativeDicomModel.DicomAttribute[5].Value = [{_: time, '$': {number: '1'}}];
 			var xml_save = xmlBuilder.buildObject(res);
 			fs.writeFile('./metadata/patient.xml', xml_save);
 		});
@@ -74,7 +75,6 @@ var Storage = multer.diskStorage({
 
 var upload = multer({storage: Storage}).single("ImgUploader");
 
-
 app.get("/", function(req, res){
 	res.sendFile(__dirname + "/index.html");
 	reset();
@@ -91,16 +91,26 @@ app.post("/upload", function(req, res){
 });
 
 app.get("/Convert", function(req, res){
+	var today = new Date();
 	var ID = req.query.PatientID;
 	var NAME = req.query.PatientName;
 	var BD = req.query.PatientBirthday;
 	var SEX = req.query.PatientSex;
-	xmlCreater(ID, NAME, BD, SEX);
+	var DATE = today.getFullYear() + "/" + (today.getMonth()+1) + "/" + today.getDate();
+	var TIME = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+	xmlCreater(ID, NAME, BD, SEX, DATE, TIME);
 	return res.sendFile(__dirname + "/download.html");
 
 });
 
 app.get("/download", function(req, res){
+	var DName = req.query.dcmName;
+	if(DName == ""){
+		var FileName = 'Custom_jpg2dcm.dcm';
+	}
+	else{
+		var FileName = DName;
+	}
 	return res.download(FilePath, FileName, function(err){
 		if(err){
 			return res.end('Some error!\n' + err.toString());
