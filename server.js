@@ -6,6 +6,8 @@ var util = require('util');
 var xml2js = require('xml2js');
 
 var path = 'Images';
+var FileName = 'Custom_jpg2dcm.dcm';
+var FilePath = './dcmFiles/3456.dcm';
 var app = express();
 var parser = new xml2js.Parser();
 var xmlBuilder = new xml2js.Builder();
@@ -22,6 +24,14 @@ function reset(){
 	});
 }
 
+function dcmFile_Check(){
+	var COUNTER = 0;
+	fs.exists('/home/kevin/nodejs/upload/dcmFiles/3456.dcm', function(exists){
+		console.log(exists ? "success" : "Fail");
+	});
+
+}
+
 function cmdRun(){
 	fs.readdir(path, function(err, files){
 		if(err){
@@ -29,7 +39,6 @@ function cmdRun(){
 		}
 		var ls = spawn('jpg2dcm', ['-f', './metadata/patient.xml', './Images/' + files[0], './dcmFiles/3456.dcm']);
 		console.log(files[0]);
-		// var rmfile = spawn('rm', ['./Images/' + files[0]]);
 	});
 }
 
@@ -87,7 +96,17 @@ app.get("/Convert", function(req, res){
 	var BD = req.query.PatientBirthday;
 	var SEX = req.query.PatientSex;
 	xmlCreater(ID, NAME, BD, SEX);
-	return res.end("DONE!");
+	return res.sendFile(__dirname + "/download.html");
+
+});
+
+app.get("/download", function(req, res){
+	return res.download(FilePath, FileName, function(err){
+		if(err){
+			return res.end('Some error!\n' + err.toString());
+		}
+		return res.end('Done');
+	});
 });
 
 app.listen(3030, function(a){
