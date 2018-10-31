@@ -6,45 +6,57 @@
 	<script src="Script/jquery-3.1.1.min.js"></script>
 	<script src="Script/jquery.form.min.js"></script>
 	<script type="text/javascript">
-		function checkfile(send_file){
+		function checkjpg(jpg_file){
 			var validFormat = new Array(".jpg", ".jpeg");
+			var jpgfile = jpg_file.value;
 
-			var fileExt = send_file.value;
-			fileExt = fileExt.substring(fileExt.lastIndexOf('.'));
+			fileExt = jpgfile.substring(jpgfile.lastIndexOf('.'));
 			if(validFormat.indexOf(fileExt) < 0){
 				alert("Your file is valid. Please check your file whether .jpg or .jpeg format.");
-				send_file.value = null;
+				jpg_file.value = null;
+				return false;
+			}
+			else return true;
+		}
+		function checkdcm(dcm_file){
+			var legalFormat = new Array(".dcm");
+			var dcmfile = dcm_file.value;
+
+			fileExt = dcmfile.substring(dcmfile.lastIndexOf('.'));
+			if(legalFormat.indexOf(fileExt) < 0){
+				alert("Your file is valid. Please check your file whether .dcm format.");
+				dcm_file.value = null;
+				return false;
+			}
+			else return true;
+
+		}
+		function checkform1(form){
+			if(selectjpg.value == ""){
+				alert("You don't choose file. Please select file.");
+				return false;
+			}
+			else return true;
+		}
+		function checkform2(form){
+			if(selectdcm.value == ""){
+				alert("You don't choose file. Please select file.");
 				return false;
 			}
 			else return true;
 		}
 	</script>
-<!-- 	<script>
-		$(document).ready(function (){
-			var options = {
-				beforeSubmit: showRequest, //pre-submit callback
-				success: showRequest  //post-submit callback
-			};
-			$('#frmUploader').submit(function (){
-				$(this).ajaxSubmit(options);
-				return false;
-			});
-		});
-
-		function showRequest(formData, jqForm, options){
-			alert('Uploading is starting');
-			return true;
-		}
-
-		function showResponse(responseText, statusText, xhr, $form){
-			alert('status: ' + statusText + '\n\nresponseText: \n' + responseText);
-		}
-	</script> -->
 </head>
 <body>
-	<form id="frmUploader" enctype="multipart/form-data" action="upload/" method="post">
-		<input type="file" name="ImgUploader" accept=".jpg, .jpeg" onchange="checkfile(this);" />
-		<input type="submit" name="submit" id="btnSubmit" value="Upload" />
-	</form>
+	<h1>JPG2DCM</h1>
+	<form id="jpgUploader" enctype="multipart/form-data" action="jpg-upload/" method="post" onsubmit="return checkform1()">
+		<input type="file" id="selectjpg" name="ImgUploader" accept=".jpg, .jpeg" onchange="checkjpg(this);" />
+		<input type="submit" name="submit1" id="btnSubmit1" value="JPG Upload" />
+	</form><br>
+	<h1>DCM2JPG</h1>
+	<form id="dcmUploader" enctype="multipart/form-data" action="upload/" method="post" onsubmit="return checkform2()">
+		<input type="file" id="selectdcm" name="DcmUploader" accept=".dcm" onchange="checkdcm(this);" />
+		<input type="submit" name="submit2" id="btnSubmit2" value="DICOM Upload" />
+	</form><br>
 </body>
 </html>
