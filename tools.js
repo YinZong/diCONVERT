@@ -4,15 +4,22 @@ const {spawn} = require('child_process');
 
 var parser = new xml2js.Parser();
 var xmlBuilder = new xml2js.Builder();
-var path = 'Images';
+var Imagepath = 'Images';
+var Dcmpath = 'dcmFiles'
 
 module.exports = {
 	resetDir: function(){
-		fs.readdir(path, function(err, files){
+		fs.readdir(Imagepath, function(err, files){
 			if(err){
 				console.log(err);
 			}
-			var cls = spawn('rm', ['./Images/' + files[0], './dcmFiles/3456.dcm']);
+			var cls = spawn('rm', ['./Images/' + files[0]]);
+		});
+		fs.readdir(Dcmpath, function(err, files){
+			if(err){
+				console.log(err);
+			}
+			else spawn('rm', ['./' + Dcmpath + '/' + files[0]]);
 		});
 	},
 	xmlCreater: function(id, name, bd, sex, date, time){
@@ -36,15 +43,26 @@ module.exports = {
 			});
 		});
 		cmdRun();
+	},
+	dcm2img: function(){
+		fs.readdir(Dcmpath, function(err, files){
+			if(err){
+				console.log(err);
+			}
+			else{
+				console.log('./dcmFiles/' + files[0]);
+				spawn('dcm2jpg', ['./dcmFiles/' + files[0], './Images/img.jpg']);
+			} 
+		});	
 	}
 }
 
 function cmdRun(){
-	fs.readdir(path, function(err, files){
+	fs.readdir(Imagepath, function(err, files){
 		if(err){
 			console.log(err);
 		}
-		var ls = spawn('jpg2dcm', ['-f', './metadata/patient.xml', './Images/' + files[0], './dcmFiles/3456.dcm']);
+		spawn('jpg2dcm', ['-f', './metadata/patient.xml', './Images/' + files[0], './dcmFiles/3456.dcm']);
 		// console.log(files[0]);
 	});
 }
