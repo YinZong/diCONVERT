@@ -39,7 +39,7 @@ app.post("/jpg-upload", function(req, res){
 	});
 });
 
-app.get("/Convert", function(req, res){
+app.get("/jpg-upload", function(req, res){
 	var today = new Date();
 	var ID = req.query.PatientID;
 	var NAME = req.query.PatientName;
@@ -79,7 +79,7 @@ var dcmStorage = multer.diskStorage({
 
 var dcm_upload = multer({storage: dcmStorage}).single("DcmUploader");
 
-app.post("/dcm-upload", function(req, res){
+app.post("/dcm-download", function(req, res){
 	dcm_upload(req, res, function(err){
 		if(err){
 			return res.end("Something went worng!\n" + err.toString());
